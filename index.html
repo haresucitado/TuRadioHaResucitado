@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ha Resucitado Radio - La Voz de la Esperanza</title>
+
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <link as="style"
+        href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900"
+        onload="this.rel='stylesheet'" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+
+    <style type="text/tailwindcss">
+        :root {
+            /* COLORES BASADOS EN VERDE CLARO */
+            --primary-color: #4CAF50; /* Verde Claro/Brillante (para bordes, botones, enlaces principales) */
+            --secondary-color: #81C784; /* Verde más claro o complementario (para énfasis secundario) */
+            --background-dark: #1A1A1A; /* Gris muy Oscuro para el fondo principal */
+            --background-light: #2C2C2C; /* Gris intermedio para tarjetas y navbar */
+            --text-light: #f0f0f0; /* Texto casi blanco */
+            --text-dark: #B0B0B0; /* Texto gris claro para descripciones */
+        }
+        
+        #video-background {
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.9);
+        }
+
+        /* Estilo para la barra de navegación FIJA */
+        .fixed-navbar {
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%; 
+            z-index: 50; 
+            backdrop-filter: blur(8px);
+            background-color: var(--background-light); 
+        }
+        
+        /* Estilos específicos para el mapa de misiones */
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            /* Relación de aspecto del mapa - ajustada a la imagen proporcionada (unnamed (4).jpg) */
+            padding-top: 58.95%; 
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilo para la imagen dentro del wrapper */
+        .map-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Asegura que la imagen cubra el área */
+            border-radius: 0.75rem;
+        }
+
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* PIN NEGRO */
+        .pin-default {
+            background-color: #000000; /* Negro sólido */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Sombra suave */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .pin-hover-state {
+            background-color: var(--secondary-color); /* Verde claro en hover */
+            transform: scale(1.5);
+            z-index: 11;
+        }
+
+        /* ************************************** */
+        /* CORRECCIÓN DE LEGIBILIDAD DEL TOOLTIP */
+        /* ************************************** */
+        .pin-tooltip {
+            position: absolute;
+            top: 50%; 
+            left: 100%; 
+            transform: translateY(-50%) translateX(15px);
+            opacity: 0;
+            visibility: hidden;
+            
+            /* Fondo sólido y oscuro (el "cuadro negro") */
+            background-color: var(--background-dark); 
+            color: var(--text-light); /* Texto claro */
+
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 250px; 
+            width: max-content; 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.9); /* Sombra más fuerte */
+            border: 2px solid var(--secondary-color);
+            pointer-events: none;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 50; /* Alto z-index para estar sobre el mapa */
+            font-size: 0.875rem; 
+            line-height: 1.4; 
+        }
+
+        /* Tooltip a la izquierda para elementos muy a la derecha */
+        .pin-tooltip.left {
+            left: auto;
+            right: 100%;
+            transform: translateY(-50%) translateX(-15px);
+        }
+
+        .map-pin:hover .pin-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Utilidad para dar espacio debajo de la barra de navegación fija */
+        .navbar-spacer {
+            height: 4.5rem;
+            width: 100%;
+            display: block;
+        }
+
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "var(--primary-color)",
+                        secondary: "var(--secondary-color)",
+                        "background-dark": "var(--background-dark)",
+                        "background-light": "var(--background-light)",
+                        "text-light": "var(--text-light)",
+                        "text-dark": "var(--text-dark)",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.375rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                        full: "9999px",
+                    },
+                },
+            },
+        };
+
+        // Script para el efecto de hover de los pines (simulando el cambio de imagen)
+        document.addEventListener('DOMContentLoaded', () => {
+            const pins = document.querySelectorAll('.map-pin');
+            pins.forEach(pin => {
+                pin.addEventListener('mouseenter', () => {
+                    pin.classList.remove('pin-default');
+                    pin.classList.add('pin-hover-state');
+                });
+                pin.addEventListener('mouseleave', () => {
+                    pin.classList.remove('pin-hover-state');
+                    pin.classList.add('pin-default');
+                });
+            });
+        });
+
+    </script>
+    
+</head>
+
+<body class="font-display text-text-light bg-background-dark">
+
+    <div id="video-background-container" class="fixed top-0 left-0 w-full h-full overflow-hidden">
+        <video autoplay loop muted playsinline id="video-background" class="w-full h-full absolute opacity-10">
+            <source src="mifondo.mp4" type="video/mp4">
+            Tu navegador no soporta el elemento de video.
+        </video>
+    </div>
+    
+    <div
+        class="relative flex min-h-screen w-full flex-col overflow-x-hidden"
+    >
+        <header
+            class="fixed-navbar flex flex-col items-center justify-between whitespace-nowrap px-4 md:px-10 py-0"
+        >
+            <div
+                class="w-full h-2 bg-primary shadow-xl shadow-primary/40"
+            ></div>
+            <div class="flex items-center justify-between w-full py-3 bg-background-light">
+                <div class="flex items-center gap-3 text-white">
+                    <div class="h-12 w-auto flex items-center">
+                        <img src="black logo.png" alt="Logo de la Iglesia" class="h-full w-auto max-h-12 mr-3 opacity-90">
+                        
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 mt-4">
+                    <a href="https://www.facebook.com/profile.php?id=61580656551288" target="_blank" title="Logo COGOP Cruz">
+                        <img src="logo iglesia.png" alt="Logo de la Iglesia de Dios de la Profecía" class="h-10 w-auto">
+                    </a>
+                 </div>
+
+                <nav class="hidden md:flex items-center gap-6 ml-auto">
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#sobre-nosotros">Sobre Nosotros</a>
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#noticias">Noticias</a>
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#ministerios">Nuestros Ministerios</a>
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#misiones">Donde Servimos</a>
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#creencias">Nuestras Creencias</a>
+                    <a class="text-sm font-medium text-text-light hover:text-primary transition-colors" href="#horario">Horario de Cultos y Podcast</a>
+                    <a class="inline-flex items-center justify-center rounded-full h-10 px-4 bg-primary text-sm font-bold shadow-md shadow-primary/30 hover:bg-primary/90 transition-all" href="#dar-contacto">
+                        <i class="fas fa-hand-holding-heart mr-2"></i> Dar
+                    </a>
+                </nav>
+                
+                <button
+                    class="md:hidden flex items-center justify-center rounded-full h-10 w-10 bg-background-dark hover:bg-primary/20 transition-colors"
+                >
+                    <span class="material-symbols-outlined text-xl text-text-light"
+                        >menu</span
+                    >
+                </button>
+            </div>
+            
+        </header>
+        
+        <div class="navbar-spacer"></div>
+
+        <div class="layout-container flex h-full grow flex-col">
+            
+            <main class="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-8 z-10">
+                <div class="layout-content-container flex flex-col max-w-5xl flex-1 gap-12">
+                    
+                    <div id="inicio"
+                        class="relative rounded-xl overflow-hidden min-h-[300px] flex flex-col justify-end bg-cover bg-center bg-background-dark/70"
+                        style='background-image: linear-gradient(0deg, rgba(26, 26, 26, 0.8) 0%, rgba(26, 26, 26, 0.2) 50%), url("portadaaudio.jpg");'
+                    >
+                        <div class="p-8">
+                            <h1 class="text-white text-5xl font-extrabold shadow-text-lg"> Radio Ha Resucitado</h1>
+                            <p class="text-primary text-xl font-medium mt-2">"Mateo 28:6" - La voz de la esperanza y la fe.</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-background-light p-6 rounded-xl shadow-2xl border-t-4 border-primary backdrop-blur-sm"
+                    >
+                        <h2 class="text-text-light text-3xl font-bold mb-4 flex items-center">
+                            <span class="text-primary material-symbols-outlined align-middle mr-2 text-4xl">live_tv</span>
+                            Transmisión En Vivo
+                        </h2>
+                        <div class="relative w-full overflow-hidden rounded-lg" style="padding-top: 56.25%">
+                            <iframe
+                                class="absolute top-0 left-0 w-full h-full"
+                                src="https://www.youtube.com/embed/live_stream?channel=UCsfK2ICJifVDQ9inRLS-RiQ"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                title="Stream en Vivo Ha Resucitado Radio"
+                            ></iframe>
+                        </div>
+                        <p class="text-text-dark mt-4 text-sm">
+                            Disfruta de la programación en tiempo real.
+                        </p>
+                    </div>
+
+                    <div id="creencias" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-secondary backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">book</span>
+                            Nuestras Creencias
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                            <div class="md:col-span-1 flex justify-center order-2 md:order-1">
+                                <img src="biblia612x612.jpg" alt="Familia leyendo la Biblia" 
+                                     class="w-full h-auto max-w-xs md:max-w-full rounded-xl shadow-xl shadow-secondary/20" 
+                                     style="filter: drop-shadow(0 0 10px var(--secondary-color));"
+                                />
+                            </div>
+                            
+                            <div class="md:col-span-2 order-1 md:order-2">
+                                <h3 class="text-2xl font-bold text-secondary mb-3">
+                                    Guiados por toda la Biblia correctamente dividida
+                                </h3>
+                                <p class="text-text-light font-semibold mb-2">
+                                    Nuestro fundamento: La Biblia
+                                </p>
+                                <p class="text-text-dark leading-relaxed mb-4">
+                                    **La autoridad suprema de las Escrituras**
+                                    La Iglesia de Dios de la Profecía ha basado sus creencias en “toda la Biblia correctamente dividida”. Afirmamos la Biblia como la Palabra de Dios, inspirada, inerrable e infalible. Su revelación escrita para la humanidad y nuestra guía principal en todo asunto relacionado con la fe, práctica y disciplina.
+                                </p>
+                                <p class="text-text-dark leading-relaxed mb-4 italic font-medium">
+                                    La Biblia es nuestra autoridad máxima, libre de todo credo o tradición creada por el hombre.
+                                </p>
+                                <p class="text-text-dark leading-relaxed">
+                                    Los primeros pioneros adoptaron el Nuevo Testamento como su única regla de fe y práctica. Actualmente, las decisiones doctrinales son tomadas unánimemente en la Asamblea Internacional.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+<div id="dar-contacto" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-secondary backdrop-blur-sm">
+    <h2 class="text-3xl font-bold text-text-light mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">volunteer_activism</span>
+        Dar y Contacto
+    </h2>
+    <p class="text-text-dark leading-relaxed mb-8 border-b border-background-dark pb-6">
+        Tu generosidad apoya nuestra misión. También puedes contactarnos directamente aquí.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+            <h3 class="text-2xl font-bold text-primary mb-3 flex items-center gap-2">
+                <i class="fas fa-hand-holding-usd text-secondary"></i>
+                Ofrenda y Diezmos
+            </h3>
+            <p class="text-text-dark mb-4">
+                Agradecemos tu fidelidad. Puedes dar en línea de forma segura utilizando Zelle.
+            </p>
+            
+            <div class="flex flex-col gap-4 items-center bg-background-dark p-6 rounded-lg border border-secondary/50">
+                
+                <h4 class="text-xl font-bold text-text-light mb-2 flex items-center gap-2">
+                    <i class="fas fa-paper-plane text-secondary"></i>
+                    Envía tu ofrenda por Zelle
+                </h4>
+
+                <div class="text-center">
+                    <p class="text-sm font-semibold text-text-dark uppercase tracking-wider">
+                        Correo o Teléfono para Zelle:
+                    </p>
+                    <p class="text-2xl font-extrabold text-primary break-words">
+                        [803) 922-5417]
+                    </p>
+                </div>
+
+                <p class="text-xs text-text-dark mt-2 italic text-center">
+                    Por favor, utiliza este contacto en tu aplicación Zelle.
+                </p>
+
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-2xl font-bold text-primary mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary">mail</span>
+                Información de Contacto
+            </h3>
+            <div class="text-text-dark space-y-2">
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                    <span class="font-bold">Dirección:</span> 1918 Augusta Rd, West Columbia,SC
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">phone</span>
+                    <span class="font-bold">Teléfono:</span> 803) 922-5417
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">email</span>
+                    <span class="font-bold">Email:</span> radioharesucitado@gmail.com
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div>
+            <h3 class="text-2xl font-bold text-primary mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary">mail</span>
+                Información de Contacto
+            </h3>
+            <div class="text-text-dark space-y-2">
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                    <span class="font-bold">Dirección:</span> 1918 Augusta Rd, West Columbia,SC
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">phone</span>
+                    <span class="font-bold">Teléfono:</span> 803) 922-5417
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">email</span>
+                    <span class="font-bold">Email:</span> radioharesucitado@gmail.com
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+                    <div id="horario" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-primary/50 backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-3xl">schedule</span>
+                            Horario de Cultos y Podcast
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-text-light">
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Lunes Podcast</span>
+                                <span class="text-primary font-bold">8:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Martes Oración</span>
+                                <span class="text-primary font-bold">8:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Miércoles Clase de Discipulado</span>
+                                <span class="text-primary font-bold">8:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Jueves Podcast</span>
+                                <span class="text-primary font-bold">8:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Viernes Culto</span>
+                                <span class="text-primary font-bold">8:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-background-dark py-2">
+                                <span class="font-medium">Sábado Podcast</span>
+                                <span class="text-primary font-bold">6:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 col-span-1 md:col-span-2">
+                                <span class="font-medium">Domingo Culto (Mañana y Tarde)</span>
+                                <span class="text-primary font-bold">9 A 11 AM y 12:00 PM</span>
+                            </div>
+                        </div>
+                        <p class="text-text-light text-lg mt-6 text-center italic font-semibold">
+                            Te esperamos en la presencia de Dios. ¡Trae a un Amigo! 👋
+                        </p>
+                    </div>
+
+                    <div id="sobre-nosotros" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-primary backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">info</span>
+                            Sobre Nosotros
+                        </h2>
+                        <p class="text-text-dark leading-relaxed">
+                            Iglesia Casa de Refugio/Radio "Ha Resucitado" es un ministerio cristiano dedicado a la
+                            proclamación del evangelio de Jesucristo a través de la música, la
+                            enseñanza y la comunión. Nacimos en el corazón de Dios con el
+                            propósito de ser una luz de esperanza y un faro de fe para todas
+                            las naciones. Nuestra historia es un testimonio del poder
+                            transformador de Dios, comenzando como un pequeño proyecto de
+                            radio en línea y creciendo hasta convertirnos en una comunidad
+                            global de creyentes unidos por el amor de Cristo. Creemos en el
+                            poder de la Palabra y la adoración para cambiar vidas, restaurar
+                            corazones y construir el Reino de Dios aquí en la Tierra.
+                        </p>
+                    </div>
+                    
+                    <div id="ministerios" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-primary/70 backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">groups</span>
+                            Nuestros Ministerios
+                        </h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-text-light">
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">music_note</span>
+                                <span class="text-sm font-medium">Ministerio de Alabanza</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">face_6</span>
+                                <span class="text-sm font-medium">Ministerio de Jóvenes</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">child_care</span>
+                                <span class="text-sm font-medium">Ministerio de Pre-Jóvenes</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">man</span>
+                                <span class="text-sm font-medium">Ministerio de Caballeros</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">woman</span>
+                                <span class="text-sm font-medium">Ministerio de Damas</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">vpn_key</span>
+                                <span class="text-sm font-medium">Ministerio de Ujieres</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">school</span>
+                                <span class="text-sm font-medium">Ministerio de Niños</span>
+                            </div>
+                            <div class="bg-background-dark p-3 rounded-lg flex items-center gap-2 shadow-md">
+                                <span class="material-symbols-outlined text-secondary">campaign</span>
+                                <span class="text-sm font-medium">Ministerio de Evangelismo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="misiones" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-primary backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">public</span>
+                            Nuestra Iglesia Alrededor del Mundo (Misiones)
+                        </h2>
+                        <p class="text-text-dark leading-relaxed mb-6 italic">
+                            Únase a nosotros en la misión de reconciliar al mundo con Cristo por medio del poder del Espíritu Santo.
+                        </p>
+                        
+                        <div class="map-wrapper relative">
+                            <img src="mapa.png" alt="Mapa de Misiones de la Iglesia de Dios de la Profecía" class="map-image" />
+                            
+                            <a href="URL_DE_NOTICIAS_DE_NORTEAMERICA" 
+                               class="map-pin pin-default" 
+                               style="top: 38.04%; left: 23.11%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip">
+                                    <span class="font-bold block text-primary mb-1">Norteamérica</span>
+                                    En Norteamérica, la Iglesia de Dios de la Profecía está viva y proclamando el evangelio en **cuatro naciones**. Contando con una membresía de **88,216 personas** adorando en **12 idiomas**.
+                                </span>
+                            </a>
+
+                            <a href="URL_DE_NOTICIAS_DE_MEXICO_CENTROAMERICA" 
+                               class="map-pin pin-default" 
+                               style="top: 51.96%; left: 21.22%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip">
+                                    <span class="font-bold block text-primary mb-1">México y Centroamérica</span>
+                                    La Iglesia de Dios de la Profecía transforma vidas en **11 naciones** con **185,260 personas** que adoran en **tres idiomas**.
+                                </span>
+                            </a>
+                            
+                            <a href="URL_DE_NOTICIAS_DE_ISLAS_CARIBE" 
+                               class="map-pin pin-default" 
+                               style="top: 50%; left: 28%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip">
+                                    <span class="font-bold block text-primary mb-1">Islas del Caribe y Océano Atlántico</span>
+                                    Con un alcance de **27 naciones**, más de **131,000 creyentes** alzan sus voces en **seis idiomas**, declarando la bondad de Dios.
+                                </span>
+                            </a>
+
+                            <a href="URL_DE_NOTICIAS_DE_SUDAMERICA" 
+                               class="map-pin pin-default" 
+                               style="top: 69.41%; left: 30.05%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip">
+                                    <span class="font-bold block text-primary mb-1">Sudamérica</span>
+                                    La iglesia comparte la luz de Cristo en **10 naciones** con **83,467 miembros** que adoran en **cinco idiomas**.
+                                </span>
+                            </a>
+                            
+                            <a href="URL_DE_NOTICIAS_DE_EURASIA" 
+                               class="map-pin pin-default" 
+                               style="top: 35.92%; left: 50.12%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip left">
+                                    <span class="font-bold block text-primary mb-1">Europa y Eurasia</span>
+                                    La Iglesia de Dios de la Profecía está presente en **24 naciones**. Con **16,408 personas** adorando en **19 idiomas**.
+                                </span>
+                            </a>
+                            
+                            <a href="URL_DE_NOTICIAS_DE_AFRICA" 
+                               class="map-pin pin-default" 
+                               style="top: 54.71%; left: 52.20%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip left">
+                                    <span class="font-bold block text-primary mb-1">África</span>
+                                    A lo largo del vasto y diverso continente africano, la Iglesia de Dios de la Profecía es el faro de fe que alumbra en **39 naciones**.
+                                </span>
+                            </a>
+                            
+                            <a href="URL_DE_NOTICIAS_DE_ASIA_OCEANIA" 
+                               class="map-pin pin-default" 
+                               style="top: 51.34%; left: 74.30%; transform: translate(-50%, -50%);"
+                            >
+                                <span class="pin-tooltip left">
+                                    <span class="font-bold block text-primary mb-1">Asia, Australia y Oceanía</span>
+                                    Una región impresionante con **53,328 miembros** que adoran en **29 idiomas**, unidos por su pasión por Cristo.
+                                </span>
+                            </a>
+                            
+                            
+                        </div>
+                        <p class="text-text-dark text-sm mt-4 text-center">
+                            Posiciona el ratón sobre los puntos para ver el impacto misionero de la iglesia.
+                        </p>
+                    </div>
+
+                    <div id="noticias" class="bg-background-light p-8 rounded-xl shadow-lg border-t-4 border-primary backdrop-blur-sm">
+                        <h2 class="text-3xl font-bold text-text-light mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">campaign</span>
+                            Noticias Recientes
+                        </h2>
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        >
+                            <div
+                                class="bg-background-dark rounded-xl overflow-hidden shadow-lg group transition-transform hover:scale-[1.02] duration-300"
+                            >
+                                <a href="https://www.facebook.com/watch?v=1501766384490245" target="_blank">
+                                    <div
+                                        class="w-full h-40 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                                        style='background-image: url("IMAGEN_NOTICIA_1.jpg");'
+                                    ></div>
+                                    <div class="p-5">
+                                        <p class="text-primary text-sm font-medium">EVENTO</p>
+                                        <p
+                                            class="text-text-light text-lg font-bold mt-1 group-hover:text-secondary transition-colors"
+                                        >
+                                            Gran Campaña de Milagros
+                                        </p>
+                                        <p class="text-text-dark text-sm mt-2">
+                                            Revive los momentos de fe y sanidad en nuestra última campaña.
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div
+                                class="class="bg-background-dark rounded-xl overflow-hidden shadow-lg group transition-transform hover:scale-[1.02] duration-300"
+                            >
+                                <a href="URL_DEL_ANUNCIO_2" target="_blank">
+                                    <div
+                                        class="w-full h-40 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                                        style='background-image: url("IMAGEN_NOTICIA_2.jpg");'
+                                    ></div>
+                                    <div class="p-5">
+                                        <p class="text-primary text-sm font-medium">PASTORAL</p>
+                                        <p
+                                            class="text-text-light text-lg font-bold mt-1 group-hover:text-secondary transition-colors"
+                                        >
+                                            Lanzamiento de la nueva Serie
+                                        </p>
+                                        <p class="text-text-dark text-sm mt-2">
+                                            Una poderosa enseñanza bíblica sobre el poder de la resurrección.
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div
+                                class="bg-background-dark rounded-xl overflow-hidden shadow-lg group transition-transform hover:scale-[1.02] duration-300"
+                            >
+                                <a href="URL_DEL_ANUNCIO_3" target="_blank">
+                                    <div
+                                        class="w-full h-40 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                                        style='background-image: url("IMAGEN_NOTICIA_3.jpg")'
+                                    ></div>
+                                    <div class="p-5">
+                                        <p class="text-primary text-sm font-medium">RADIO</p>
+                                        <p
+                                            class="text-text-light text-lg font-bold mt-1 group-hover:text-secondary transition-colors"
+                                        >
+                                            Nuevos Podcast de Oración
+                                        </p>
+                                        <p class="text-text-dark text-sm mt-2">
+                                            Escucha mensajes de aliento en tu plataforma de podcast favorita.
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="contacto" class="bg-background-light/90 p-8 rounded-xl shadow-2xl text-center backdrop-blur-sm border-t-4 border-primary">
+                        <h2 class="text-3xl font-bold text-text-light">
+                            Síguenos
+                        </h2>
+                        <p class="text-text-dark mt-2 mb-6 max-w-lg mx-auto">
+                            Mantente conectado con nosotros, participa en nuestras
+                            conversaciones y sé parte de nuestra comunidad en línea.
+                        </p>
+                        <div class="flex justify-center items-center gap-6 mb-8">
+                            <a
+                                class="text-primary hover:text-secondary transition-colors text-4xl"
+                                href="https://www.facebook.com/profile.php?id=61580656551288"
+                                target="_blank"
+                                title="Síguenos en Facebook"
+                                ><i class="fab fa-facebook-f"></i
+                            ></a>
+                            <a
+                                class="text-primary hover:text-secondary transition-colors text-4xl"
+                                href="URL_DE_INSTAGRAM"
+                                target="_blank"
+                                title="Síguenos en Instagram"
+                                ><i class="fab fa-instagram"></i
+                            ></a>
+                            <a
+                                class="text-primary hover:text-secondary transition-colors text-4xl"
+                                href="https://www.youtube.com/@radio-ha-resucitado"
+                                target="_blank"
+                                title="Suscríbete en YouTube"
+                                ><i class="fab fa-youtube"></i
+                            ></a>
+                            <a
+                                class="text-primary hover:text-secondary transition-colors text-4xl"
+                                href="URL_DE_TIKTOK"
+                                target="_blank"
+                                title="Síguenos en TikTok"
+                                ><i class="fab fa-tiktok"></i
+                            ></a>
+                        </div>
+                        <a
+                            class="inline-flex items-center justify-center rounded-lg h-12 px-6 bg-green-600 text-white gap-2 text-base font-bold shadow-lg shadow-green-600/40 hover:shadow-xl hover:scale-105 transition-all"
+                            href="https://wa.me/18039225417?text=Hola%20Radio%20Ha%20Resucitado%2C%20quisiera%20pedir%20una%20oraci%C3%B3n%20o%20hacer%20una%20consulta."
+                            target="_blank"
+                        >
+                            <i class="fab fa-whatsapp"></i>
+                            <span>Envíanos un WhatsApp</span>
+                        </a>
+                    </div>
+                    
+                </div>
+            </main>
+
+            <footer class="bg-background-light/90 border-t border-background-dark mt-12 z-10 backdrop-blur-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div
+                        class="flex flex-col md:flex-row justify-between items-start gap-8"
+                    >
+                        
+                        <div class="flex flex-col gap-3">
+                            <span class="text-text-dark text-sm"
+                                >© 2025 Ha Resucitado Radio. Todos los derechos reservados.</span
+                            >
+                            <span class="text-text-dark text-xs">
+                                Desarrollado por <span class="text-primary font-bold">Leonardo. O</span>.
+                            </span>
+                            
+                         <div class="flex items-center gap-3 mt-4">
+                           <a href="https://www.facebook.com/IDDDLP" title="Logo de la Iglesia Casa de Refugio">
+                             <img src="logo iglesia.png" alt="Logo de la Iglesia de Dios de la Profecía" class="h-10 w-auto">
+                         </a>
+                       </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12">
+                            <div>
+                                <h4 class="font-bold text-text-light mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">church</span>
+                                    Iglesia Casa de Refugio
+                                </h4>
+                                <p class="text-text-dark text-sm">
+                                    <span class="font-bold">1918 Augusta Rd</span>
+                                    <br>
+                                    West Columbia, SC
+                                    <br>
+                                    United States
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-text-light mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">radio</span>
+                                    Estudios de Radio
+                                </h4>
+                                <p class="text-text-dark text-sm">
+                                    <span class="font-bold">1918 Augusta Rd</span>
+                                    <br>
+                                    West Columbia, SC
+                                    <br>
+                                    United States
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <div
+            class="w-full h-2 bg-primary shadow-xl shadow-primary/40"
+        ></div>
+    </div>
+</body>
+</html>
